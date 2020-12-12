@@ -119,6 +119,7 @@ Death_Policy_Var %>%
   geom_smooth() +
   labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
   xlim(0,15) +
+  ylim(0,6500) +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
 ```
 
@@ -136,6 +137,24 @@ Death_Policy_Var %>%
 
 - Now, let's look at collective of each state statistics data. From this graph, we can see the trend in each states (that consists the counties). There are some states that have higher Covid-19 deaths as the number of policies mandated increases e.g. Florida (FL), Georgia (GA), and New York (NY). However, there are also states that have lower Covid-19 deaths as the number of policies mandated increases e.g. Utah (UT), Missouri (MA), and Tennessee (TN). Not just that, there also states with constant number of Covid-19 deaths with constant number of policies mandated e.g. Washington (WA), Wisconsin (WI), Michigan (MI), and North Carolina (NC). Thus, there is no conclusion of correlation we can draw at this point. 
 
+*Let's Look Into The Narrow Data*
+
+```{r}
+DPV_narrow <-
+Death_Policy_Var %>%
+  select(County.name, Deaths.involving.COVID.19, PolicyInvolved)
+
+head(DPV_narrow)
+```
+
+```{r}
+DPV_wide <-
+  DPV_narrow %>%
+  pivot_wider(names_from = PolicyInvolved, values_from = Deaths.involving.COVID.19)
+
+head(DPV_wide)
+```
+
 
 ## Challenge Encountered & Resolutions (KENA BAIKI LAGI NI)
 
@@ -150,7 +169,7 @@ Death_Policy_Var %>%
 - For example, high number of policies but show low number of Covid-19 deaths might be the results after implementing the policy for some times (eg. some weeks).
 
 
-## Divide The Counties Into Clusters
+## Technique 1: Divide The Counties Into Clusters
 
 - To tackle to the challenge encountered as stated earlier, I am going to divide the counties into five categories based on the number of Covid-19 deaths: 
 - (1) counties with extremely high number of Covid-19 deaths, 3000-6418 deaths.
@@ -337,7 +356,7 @@ Cluster5 %>%
 
 As a conclusion after dividing the counties into 5 categories process, I can conclude that based on this data, regardless of the total Covid-19 deaths tolls in any county, majority of the county is Implementing only 1 Covid-19 policy. 
 
-## Finding 1: Majority of the County in the United States is Implementing only 1 Covid-19 Policy
+## Finding from Technique 1: Majority of the County in the United States is Implementing only 1 Covid-19 Policy
 
 - Regardless of the total Covid-19 deaths tolls in any county, majority of the county is Implementing only 1 Covid-19 policy. 
 - The proportion of counties with only 1 Covid-19 policy makes up 64% from the total 292 counties that we have in the data sets (187/292*100= 64%).
@@ -367,14 +386,46 @@ PolicyTypeofCounty1Policy %>%
 ```
 
 - We find that that most common and famous policy type that is implemented by counties with only 1 Covid-19 policy is Shelter in Place, or also known as quarantine order. 
+- It is indeed the most effective method to protect the citizens from being exposed to the virus and the virus itself from spreading like a wildfire.
 
-* maybe boleh cakap its efficiency here???
-
-Now, let's find the most famous policy types implemented by counties that have 8-14 policies.
 
 
 * pastu tengok counties tu ikut states ke cane (so deaths tolls takde kaitan la) 
 * okay so kena cari kaitan antara counties policy banyak dengan states
+
+## Technique 2: To Find Out if The Policies Mandated in a County Depends on the State It Resides
+
+- In this technique, I am going to investigate if the number of policies mandated in a county is depending on or correspond to the states it resides.
+- Which means, if the states have influences to the policy of a county, I will go deeper to look into the trends of each states and see if it has any relationship with the deaths tolls from the Covid-19. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
