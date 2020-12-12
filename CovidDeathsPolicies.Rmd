@@ -1,0 +1,386 @@
+---
+title: "Final Project"
+author: "Nurul Syafiqah Mohammad Hamdi"
+date: "Due Date: 12/13/2020"
+output: html_notebook
+---
+
+
+```{r, warning = FALSE, message = FALSE} 
+rm(list = ls()) ## cleans up your R environment
+
+# load packages
+library(dplyr)   
+library(tidyr)
+library(ggplot2)
+```
+
+
+
+```{r}
+setwd("~/Downloads/2020 Primary Precinct Results")
+Covid19 <- read.csv("Provisional_COVID-19_Death_Counts_in_the_United_States_by_County.csv", header= TRUE)
+```
+
+```{r}
+Policy <- read.csv("https://healthdata.gov/sites/default/files/state_policy_updates_20201114_0719.csv")
+```
+
+## Inspecting The Data Process
+
+```{r}
+head(Covid19)
+```
+
+```{r}
+glimpse(Covid19)
+```
+
+```{r}
+tail(Policy)
+```
+
+```{r}
+names(Policy)
+```
+
+```{r}
+glimpse(Policy)
+```
+
+
+```{r}
+# Now, I want to remove all NA in the Policy data frames and store it in CleanfromNAPolicy
+CleanfromNAPolicy <-
+Policy %>%
+  na.omit()
+
+tail(CleanfromNAPolicy)
+```
+
+```{r}
+head(CleanfromNAPolicy)
+```
+
+
+## Research Question
+
+Is there any correlation between the number of policies mandated with the number of Covid-19 deaths in a county?
+
+Hypothesis of Intuition: The more policy involved, the less the Covid-19 deaths in a spesific county.
+
+```{r}
+# merge the two data tables
+Death_Policy <-
+  Covid19 %>%
+  right_join(Policy, by = c("FIPS.County.Code" = "fips_code")) %>%
+  filter(start_stop == "start") # I only choose "start" because "stop" does not add any amount to the policy implemented
+
+head(Death_Policy)
+```
+
+```{r}
+Death_Policy_Var <-
+Death_Policy %>%
+  select(Date.as.of, First.week, Last.week, State, County.name, Deaths.involving.COVID.19, date, policy_type) %>% # Only select variables I want to use
+  group_by(County.name) %>%
+  mutate(PolicyInvolved= n_distinct(policy_type)) %>% # add one variable that shows the number of policy involved in a county %>% 
+  select(-policy_type) %>% # remove the policy_type variable
+  slice(1) # to make sure one county only appear once in data table 
+  
+head(Death_Policy_Var)
+```
+
+```{r}
+nrow(Death_Policy_Var)
+ncol(Death_Policy_Var)
+```
+
+- I can conclude that I only able to get data and information from 292 out of 3006 counties in the United States since there are some missing values/names in the data frame, for date as of 12th November 2020.
+
+## Key Visualization As The First Glance
+
+```{r}
+Death_Policy_Var %>%
+  ggplot(aes(x=PolicyInvolved, y=Deaths.involving.COVID.19)) +
+  geom_point(aes(color=State)) +
+  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  xlim(0,15) +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
+```
+
+- In the first glance, we can see that those counties that only mandate 2 policies have the highest deaths cases from Covid-19. However, we cannot conclude as such because there are counties with lower number of policies mandated with lower number of deaths as well. For example, the counties with 3 policies still have a lower number of covid-19 deaths compared to counties with 4 policies. 
+
+
+```{r}
+Death_Policy_Var %>%
+  ggplot(aes(x=PolicyInvolved, y=Deaths.involving.COVID.19)) +
+  geom_point(aes(color=State)) +
+  geom_smooth() +
+  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  xlim(0,15) +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
+```
+
+- From this graph, we can see that the counties with 5-8 policies have the highest Covid-19 deaths in average and those counties with 10-15 policies have higher Covid-19 deaths than those with 1-5 policies in average. But if we take individual look at the glyphs, this statement is completely false. This is tally with the large width of confidence bands for 8-14 number of policies mandated. Again, there is no correlation between the number of Covid-19 deaths and the number of policies mandated we can say at this point.
+
+```{r}
+Death_Policy_Var %>%
+  ggplot(aes(x=PolicyInvolved, y=Deaths.involving.COVID.19)) +
+  geom_point() +
+  facet_wrap( ~ State) +
+  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  xlim(0,15) +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies in a County By States")
+```
+
+- Now, let's look at collective of each state statistics data. From this graph, we can see the trend in each states (that consists the counties). There are some states that have higher Covid-19 deaths as the number of policies mandated increases e.g. Florida (FL), Georgia (GA), and New York (NY). However, there are also states that have lower Covid-19 deaths as the number of policies mandated increases e.g. Utah (UT), Missouri (MA), and Tennessee (TN). Not just that, there also states with constant number of Covid-19 deaths with constant number of policies mandated e.g. Washington (WA), Wisconsin (WI), Michigan (MI), and North Carolina (NC). Thus, there is no conclusion of correlation we can draw at this point. 
+
+
+## Challenge Encountered & Resolutions (KENA BAIKI LAGI NI)
+
+- Challenges: There are so many other variables I have to consider in this research, for example, the dates of the policy first mandated and the number of deaths from Covid-19 as the time passes. 
+
+- Which means, once a policy is mandated, it will not show an instantaneous results as we might think. It probably takes at least 2-3 weeks for the result (of increases/decreases) to show after the policy is implemented. 
+
+- The authority might look at the number of Covid-19 cases itself before deciding to mandate the policy, rather than looking at the number of deaths from Covid-19 as the first resource. 
+
+- Resolution: I observe the trends by each states and make various conclusions based on the trends and see if it matches the findings.
+
+- For example, high number of policies but show low number of Covid-19 deaths might be the results after implementing the policy for some times (eg. some weeks).
+
+
+## Divide The Counties Into Clusters
+
+- To tackle to the challenge encountered as stated earlier, I am going to divide the counties into five categories based on the number of Covid-19 deaths: 
+- (1) counties with extremely high number of Covid-19 deaths, 3000-6418 deaths.
+- (2) counties with high number of Covid-19 deaths, 900-2999 deaths.
+- (3) counties with medium number of Covid-19 deaths, 300-899 deaths.
+- (4) counties with low number of Covid-19 deaths, 100-299 deaths.
+- (5) counties with extremely low number of Covid-19 deaths, 0-99 deaths.
+- Then from there, I will be observing each trends in the clusters corresponding to the number of Covid-19 policies involved.
+
+
+```{r}
+median(Covid19$Deaths.involving.COVID.19)
+```
+
+```{r}
+mean(Covid19$Deaths.involving.COVID.19)
+```
+
+```{r}
+range(Covid19$Deaths.involving.COVID.19)
+```
+
+- We see that the mean of Covid-19 deaths is 170 (after round up to one decimal place), the median is 39 and the minimum is 10 and the maximum is 6418.
+
+*cluster 1: counties with extremely high number of Covid-19 deaths*
+
+```{r}
+# 3000-6418 deaths
+
+Cluster1 <-
+  Death_Policy_Var %>%
+  filter(Deaths.involving.COVID.19 >= 3000 & Deaths.involving.COVID.19 <= 6418) %>%
+  arrange(desc(Deaths.involving.COVID.19)) 
+
+head(Cluster1)
+```
+
+```{r}
+Cluster1 %>%
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  geom_point(size = 2) +
+  geom_smooth(se = FALSE, color = "grey") +
+  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
+
+```
+
+```{r}
+Cluster1 %>%
+  group_by(PolicyInvolved) %>%
+  summarise(total=n())
+```
+
+- We can see from the graph that there are 3 counties (Harris, Maricopa, Los Angeles) with only 1 policy mandated although the deaths tolls from the Covid-19 in those counties are among the highest in the country. Also, the other 5 counties have 6-7 number of Covid-19 policies mandated. 
+- In this scenario, we can say that majority of the counties in the extremely high number of Covid-19 deaths is implementing 6-7 Covid-19 policies.
+
+*cluster 2: counties with high number of Covid-19 deaths*
+
+```{r}
+# 900-2999 deaths
+
+Cluster2 <-
+  Death_Policy_Var %>%
+  filter(Deaths.involving.COVID.19 >= 900 & Deaths.involving.COVID.19 <= 2999) %>%
+  arrange(desc(Deaths.involving.COVID.19))
+
+head(Cluster2)
+```
+
+```{r}
+Cluster2 %>%
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  geom_point(size = 2) +
+  geom_smooth(se = FALSE, color = "yellow") +
+  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
+```
+
+```{r}
+Cluster2 %>%
+  group_by(PolicyInvolved) %>%
+  summarise(total=n())
+```
+
+- From the graph we can see there are 8 out of 13 counties that only have 1 policies mandated. Note that there is one glyph that is invisible because the number of Covid-19 deaths between the two counties is very close to each other so they appear to be one glyph while in fact, they are individual glyphs. While the other 5 counties have 5-8 policies. 
+- In this situation, we can say that majority of the counties with high number of Covid-19 deaths is implementing only 1 Covid-19 policy.
+
+*cluster 3: counties with medium number of Covid-19 deaths*
+
+```{r}
+# 300-899 deaths
+
+Cluster3 <-
+  Death_Policy_Var %>%
+  filter(Deaths.involving.COVID.19 >= 300 & Deaths.involving.COVID.19 <= 899) %>%
+  arrange(desc(Deaths.involving.COVID.19))
+
+head(Cluster3)
+```
+
+```{r}
+Cluster3 %>%
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  geom_point(size = 2) +
+  geom_smooth(se = FALSE, color = "orange") +
+  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+Cluster3 %>%
+  group_by(PolicyInvolved) %>%
+  summarise(total=n())
+```
+
+- From the graph we can see that majority of the counties are implementing only 1-2 policies (with 23 of the counties are having 1 policy). There are only 6 counties that have policies from range 3 to 13. The county that has 13 Covid-19 policies is Alameda County, California. 
+- In this case, we can say that majority of the counties with medium number of Covid-19 deaths is implementing only 1 Covid-19 policy.
+
+*cluster 4: counties with low number of Covid-19 deaths*
+
+```{r}
+# 100-299 deaths.
+
+Cluster4 <-
+  Death_Policy_Var %>%
+  filter(Deaths.involving.COVID.19 >= 100 & Deaths.involving.COVID.19 <= 299) %>%
+  arrange(desc(Deaths.involving.COVID.19))
+
+head(Cluster4)
+```
+
+```{r}
+Cluster4 %>%
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  geom_point(size = 2) +
+  geom_smooth(se = FALSE, color = "pink") +
+  theme(legend.position = "nowhere") + # I choose "nowhere" since the total of counties are 69 which the graph will shrink with the presence of the legend
+  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") 
+```
+
+```{r}
+Cluster4 %>%
+  group_by(PolicyInvolved) %>%
+  summarise(total=n())
+```
+
+- From this graph, we can see that majority of the counties (45 of them) are implementing 1 Covid-19 policy. Also, there are 8 counties that have a range from 6 to 14 Covid-19 policies.
+- In this scenario, we can say that majority of the counties with low number of Covid-19 deaths is implementing only 1 Covid-19 policy. 
+
+*cluster 5: counties with extremely low number of Covid-19 deaths*
+
+```{r}
+# 0-99 deaths.
+
+Cluster5 <-
+  Death_Policy_Var %>%
+  filter(Deaths.involving.COVID.19 >= 0 & Deaths.involving.COVID.19 <= 99) %>%
+  arrange(desc(Deaths.involving.COVID.19))
+
+head(Cluster5)
+```
+
+```{r}
+Cluster5 %>%
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  geom_point(size = 2) +
+  geom_smooth(se = FALSE, color = "light blue") +
+  theme(legend.position = "nowhere") + # I choose "nowhere" since the total of counties are 163 which the graph will shrink with the presence of the legend
+  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") 
+
+```
+
+```{r}
+Cluster5 %>%
+  group_by(PolicyInvolved) %>%
+  summarise(total=n())
+```
+
+- From this graph, we can see that, again, majority of the counties is having only 1 Covid-19 policies. The sum of counties with 1 Covid-19 policy is 108, which makes up a proportion of 66.3% from the total population of counties in the extremely low Covid-19 deaths cluster. Also, there are 8 counties in this cluster that have a range of 6 to 10 Covid-19 policies. 
+- In this case, we can say that majority of the counties with low number of Covid-19 deaths is implementing only 1 Covid-19 policy. 
+
+As a conclusion after dividing the counties into 5 categories process, I can conclude that based on this data, regardless of the total Covid-19 deaths tolls in any county, majority of the county is Implementing only 1 Covid-19 policy. 
+
+## Finding 1: Majority of the County in the United States is Implementing only 1 Covid-19 Policy
+
+- Regardless of the total Covid-19 deaths tolls in any county, majority of the county is Implementing only 1 Covid-19 policy. 
+- The proportion of counties with only 1 Covid-19 policy makes up 64% from the total 292 counties that we have in the data sets (187/292*100= 64%).
+- Now let's find out what is that particular 1 policy that most of the counties is implementing and investigate if the spesific policy is .
+
+```{r}
+County1Policy <-
+  Death_Policy_Var %>%
+  filter(PolicyInvolved == 1)
+
+head(County1Policy)
+```
+
+```{r}
+PolicyTypeofCounty1Policy <-
+  Death_Policy %>%
+  right_join(County1Policy, by = "County.name") 
+
+head(PolicyTypeofCounty1Policy)
+```
+
+```{r}
+PolicyTypeofCounty1Policy %>%
+  group_by(policy_type) %>%
+  summarise(total = n()) %>%
+  arrange(desc(total))
+```
+
+- We find that that most common and famous policy type that is implemented by counties with only 1 Covid-19 policy is Shelter in Place, or also known as quarantine order. 
+
+* maybe boleh cakap its efficiency here???
+
+Now, let's find the most famous policy types implemented by counties that have 8-14 policies.
+
+
+* pastu tengok counties tu ikut states ke cane (so deaths tolls takde kaitan la) 
+* okay so kena cari kaitan antara counties policy banyak dengan states
+
+
+
+
+
+
+
+
+
