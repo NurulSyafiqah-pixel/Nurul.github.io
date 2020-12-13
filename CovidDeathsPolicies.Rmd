@@ -49,20 +49,6 @@ glimpse(Policy)
 ```
 
 
-```{r}
-# Now, I want to remove all NA in the Policy data frames and store it in CleanfromNAPolicy
-CleanfromNAPolicy <-
-Policy %>%
-  na.omit()
-
-tail(CleanfromNAPolicy)
-```
-
-```{r}
-head(CleanfromNAPolicy)
-```
-
-
 ## Research Question
 
 Is there any correlation between the number of policies mandated with the number of Covid-19 deaths in a county?
@@ -106,24 +92,11 @@ Death_Policy_Var %>%
   geom_point(aes(color=State)) +
   labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
   xlim(0,15) +
-  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") +
+  theme_bw()
 ```
 
 - In the first glance, we can see that those counties that only mandate 2 policies have the highest deaths cases from Covid-19. However, we cannot conclude as such because there are counties with lower number of policies mandated with lower number of deaths as well. For example, the counties with 3 policies still have a lower number of covid-19 deaths compared to counties with 4 policies. 
-
-```{r}
-Death_Policy_Var %>%
-  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19)) +
-  geom_jitter(aes(color = State)) +
-  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
-  theme(legend.position = "nowhere") + # I choose "nowhere" since the total of counties are 163 which the graph will shrink with the presence of the legend
-  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") +
-  xlim(0,15)
-```
-
-- From the graph, we can say that roughly the counties with low Covid-19 death cases tend to have higher number of Covid-19 policies and counties with high Covid-19 death case tend to have lower number of Covid-19 policies. 
-- However, I cannot make that assumption as a conclusion, because there are various other factors I have to consider statistically e.g. the proportion of each county (based on the number of Covid-19 policy implemented) in its respective clusters that I will do later in my analysis part.
-- Also, I purposely do the color = State because I want to see if the number of Covid-19 policies depends on or have any influence correspond to the state it resides respectively. 
 
 ```{r}
 Death_Policy_Var %>%
@@ -133,7 +106,8 @@ Death_Policy_Var %>%
   labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
   xlim(0,15) +
   ylim(0,6500) +
-  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") +
+  theme_minimal()
 ```
 
 - From this graph, we can see that the counties with 5-8 policies have the highest Covid-19 deaths in average and those counties with 10-15 policies have higher Covid-19 deaths than those with 1-5 policies in average. But if we take individual look at the glyphs, this statement is completely false. This is tally with the large width of confidence bands for 8-14 number of policies mandated. Again, there is no correlation between the number of Covid-19 deaths and the number of policies mandated we can say at this point.
@@ -145,7 +119,8 @@ Death_Policy_Var %>%
   facet_wrap( ~ State) +
   labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
   xlim(0,15) +
-  ggtitle("Number of Covid-19 Deaths Versus Number of Policies in a County By States")
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies in a County By States") +
+  theme_linedraw()
 ```
 
 - Now, let's look at collective of each state statistics data. From this graph, we can see the trend in each states (that consists the counties). There are some states that have higher Covid-19 deaths as the number of policies mandated increases e.g. Florida (FL), Georgia (GA), and New York (NY). However, there are also states that have lower Covid-19 deaths as the number of policies mandated increases e.g. Utah (UT), Missouri (MA), and Tennessee (TN). Not just that, there also states with constant number of Covid-19 deaths with constant number of policies mandated e.g. Washington (WA), Wisconsin (WI), Michigan (MI), and North Carolina (NC). Thus, there is no conclusion of correlation we can draw at this point. 
@@ -170,17 +145,71 @@ head(DPV_wide)
 
 - From the DPV_wide data, I can see that the number of Covid-19 death tolls does not correspond to the number of Covid-19 policies mandated in a county. For example, Alameda County with 454 death cases have 13 policies implemented, while Allegheny County with 528 death cases only has 1 policy. Not just that, Allegany which has 17 death cases has 2 more policies compared to Allegheny County, which its death cases is way more striking than Allegany.
 
-## Challenge Encountered & Resolutions (KENA BAIKI LAGI NI)
+
+## Challenge Encountered & Resolutions 
 
 - Challenges: There are so many other variables I have to consider in this research, for example, the dates of the policy first mandated and the number of deaths from Covid-19 as the time passes. 
 
 - Which means, once a policy is mandated, it will not show an instantaneous results as we might think. It probably takes at least 2-3 weeks for the result (of increases/decreases) to show after the policy is implemented. 
 
-- The authority might look at the number of Covid-19 cases itself before deciding to mandate the policy, rather than looking at the number of deaths from Covid-19 as the first resource. 
+- Resolution: I observe the trends by each states, divide the total population into 5 clusters, and adapt one statistical analysis method, only then make various conclusions based on the trends and take each of the findings into account of factors before making any general conclusion as a whole.
 
-- Resolution: I observe the trends by each states and make various conclusions based on the trends and see if it matches the findings.
 
-- For example, high number of policies but show low number of Covid-19 deaths might be the results after implementing the policy for some times (eg. some weeks).
+## Strategy 1: Use Not So Simple Random Sampling Technique, derived from Simple Random Sampling (SRS) Method
+
+- In statistics, SRS is done by selecting n individuals from the population (known as sample size) in such a way that every set of n individuals has an equal chance to be selected. 
+- But in this project, I choose to use 'regex' with random conditions to choose the sample size of n rather than using any device or software to do it for me, mainly for the learning purpose experience. Thus, I name it as Not So Simple Random Sampling.
+- But I still follow the general rule which states that the sample sizes must be equal to or greater than 30 to assume that the distribution of the sample means is fairly normally distributed.
+- By that, I will set some random conditions in 'regex' during the sample size selection process until it reaches 30 or more.
+
+*Step 1: I need to remove the "County" and "Borough" word first in each column (since I want the county/borough name solely for this entire n selection process)*
+
+```{r}
+# regex condition is any data in column variable County.name that has word "County" or "Borough" and replace them with "" which means basically nothing so it removes them from the data table
+
+Regex_data <-
+Death_Policy_Var %>%
+  mutate(County.name = gsub(pattern = "County|Borough", replacement = "", County.name)) %>%
+  na.omit()
+
+head(Regex_data)
+```
+         
+*Step 2: Sample Size Selection Process*
+
+Condition : County which contains -three vowels or more in a row- or contains only -1 consonent- or -character 'ox' or 'pe' or 'ds' or 'zo' or 'rd'-
+
+```{r}
+SRSSample <-
+Regex_data %>%
+  filter(grepl("([aeiou]{3,}|^[aeiou]{1}|ox|pe|ds|zo|rd)", County.name, ignore.case = TRUE))
+
+head(SRSSample)
+```
+
+*Analysis From Not So Simple Random Sampling*
+
+```{r}
+SRSSample %>%
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  geom_point(size = 1.3) +
+  geom_smooth(se = FALSE, color = "light green") +
+  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") +
+  theme_light()
+```
+
+```{r}
+SRSSample %>%
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19)) +
+  geom_point() +
+  geom_line() +
+  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
+```
+
+- From the two graphs if I look into the individual glyph, I can say that roughly the counties with low Covid-19 death cases tend to have higher number of Covid-19 policies and counties with high Covid-19 death case tend to have lower number of Covid-19 policies. 
+- However, I cannot make that assumption straight as a conclusion, because there are various other factors I have to consider statistically e.g. the proportion of each county (based on the number of Covid-19 policy implemented) in its respective clusters that I will do later in my analysis part.
 
 
 ## Strategy 2: Divide The Counties Into Clusters
@@ -248,6 +277,9 @@ Cluster1diffs<- dist(Cluster1)
 hc1 <- hclust(Cluster1diffs)
 plot(hc1, hang=-1)
 ```
+
+- From the Cluster Dendrogram above, we can see that there are two clusters within the cluster 1 itself. 
+- Which means, there are some variability 
 
 *cluster 2: counties with high number of Covid-19 deaths*
 
@@ -447,58 +479,9 @@ PolicyTypeofCounty1Policy %>%
 - We find that that most common and famous policy type that is implemented by counties with only 1 Covid-19 policy is Shelter in Place, or also known as quarantine order. 
 - It is indeed the most effective method to protect the citizens from being exposed to the virus and the virus itself from spreading like a wildfire.
 
-## Strategy 1: Use Simple Random Sampling (SRS) Method
+## Conclusion From All Findings
 
-- In statistics, SRS is done by selecting n individuals from the population (known as sample size) in such a way that every set of n individuals has an equal chance to be selected. 
-- But in this project, I choose to use 'regex' with random conditions to choose the sample size, n rather than using the device or any device system to do it for me for the learning purpose experience. 
-- Also, sample sizes must be equal to or greater than 30 to assume that the distribution of the sample means is fairly normally distributed.
-- Thus, I will set some conditions in 'regex' with random conditions until the sample size reach 30 or more, which the sample size selected will be used for the analysis process.
-
-*Step 1: I need to remove the "County" and "Borough" word first in each column (since I want the county/borough name solely for this entire sample size process)*
-
-```{r}
-# regex condition is any data in column variable County.name that has word "County" or "Borough" and replace them with "" which means basically nothing so it removes them from the data table
-
-Regex_data <-
-Death_Policy_Var %>%
-  mutate(County.name = gsub(pattern = "County|Borough", replacement = "", County.name)) %>%
-  na.omit()
-
-head(Regex_data)
-```
-         
-*Step 2: Sample Size Selection Process*
-
-Condition : County which contains -three vowels or more in a row- or contains only -1 consonent- and -character 'ox' or 'pe' or 'ds' or 'zo' or 'rd'-
-
-```{r}
-SRSSample <-
-Regex_data %>%
-  filter(grepl("([aeiou]{3,}|^[aeiou]{1}|ox|pe|ds|zo|rd)", County.name, ignore.case = TRUE))
-
-head(SRSSample)
-```
-
-```{r}
-SRSSample %>%
-  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
-  geom_point(size = 2) +
-  geom_smooth(se = FALSE, color = "light green") +
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
-  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
-```
-```{r}
-SRSSample %>%
-  ggplot(aes( x=PolicyInvolved, y= Deaths.involving.COVID.19 , color = County.name)) +
-  geom_jitter() +
-  geom_smooth(se = FALSE, color = "light green") +
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
-  ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
-```
-
-
-
-
+From all the analysis process I have done, I can conclude that there is no correlation between the number of Covid-19 deaths and the number of policies implemented in a county. This is because first: each policy addresses different problem at the county level. Second: from most scientific findings, usually people who died from the Covid-19 virus are people at old age and people with exisiting chronic health problems. And last but not least: the authority might look at the number of Covid-19 cases rather looking at the number of death tolls from Covid-19 as the main resource before deciding to implement any new policy.
 
 
 
