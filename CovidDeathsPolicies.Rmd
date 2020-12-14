@@ -7,7 +7,7 @@ output: html_notebook
 
 
 ```{r, warning = FALSE, message = FALSE} 
-rm(list = ls()) ## cleans up your R environment
+rm(list = ls() ) ## cleans up your R environment
 
 # load packages
 library(dplyr)   
@@ -53,13 +53,13 @@ glimpse(Policy)
 
 Is there any correlation between the number of policies mandated with the number of Covid-19 deaths in a county?
 
-Hypothesis of Intuition: The more policy involved, the less the Covid-19 deaths in a spesific county.
+The hypothesis of Intuition: The more policy involved, the less the Covid-19 deaths in a specific county.
 
 ```{r}
 # merge the two data tables
 Death_Policy <-
   Covid19 %>%
-  right_join(Policy, by = c("FIPS.County.Code" = "fips_code")) %>%
+  right_join(Policy, by = c("FIPS.County.Code" = "fips_code") ) %>%
   filter(start_stop == "start")  # I only choose "start" because "stop" does not add any amount to the policy implemented
 
 head(Death_Policy)
@@ -70,8 +70,8 @@ Death_Policy_Var <-
 Death_Policy %>%
   select(Date.as.of, First.week, Last.week, State, County.name, Deaths.involving.COVID.19, date, policy_type) %>% # Only select variables I want to use
   group_by(County.name) %>%
-  mutate(PolicyInvolved= n_distinct(policy_type)) %>% # add one variable that shows the number of policy involved in a county %>% 
-  select(-policy_type) %>% # remove the policy_type variable
+  mutate(PolicyInvolved = n_distinct(policy_type) ) %>% # add one variable that shows the number of policy involved in a county %>% 
+  select( - policy_type) %>% # remove the policy_type variable
   slice(1) # to make sure one county only appear once in data table 
   
 head(Death_Policy_Var)
@@ -82,50 +82,52 @@ nrow(Death_Policy_Var)
 ncol(Death_Policy_Var)
 ```
 
-- I can conclude that I only able to get data and information from 292 out of 3006 counties in the United States since there are some missing values/names in the data frame, for date as of 12th November 2020.
+- I can conclude that I am only able to get data and information from 292 out of 3006 counties in the United States since there are some missing values/names in the data frame, for the date as of 12th November 2020.
+
 
 ## Key Visualization As The First Glance
 
 ```{r}
 Death_Policy_Var %>%
-  ggplot(aes(x=PolicyInvolved, y=Deaths.involving.COVID.19)) +
-  geom_point(aes(color=State)) +
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19) ) +
+  geom_point(aes(color = State) ) +
+  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
   xlim(0,15) +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") +
   theme_bw()
 ```
 
-- In the first glance, we can see that those counties that only mandate 2 policies have the highest deaths cases from Covid-19. However, we cannot conclude as such because there are counties with lower number of policies mandated with lower number of deaths as well. For example, the counties with 3 policies still have a lower number of covid-19 deaths compared to counties with 4 policies. 
+- At first glance, we can see that those counties that only mandate 2 policies have the highest death cases from Covid-19. However, we cannot conclude as such because there are counties with a lower number of policies mandated with a lower number of deaths as well. For example, the counties with 3 policies still have a lower number of covid-19 deaths compared to counties with 4 policies. 
 
 ```{r}
 Death_Policy_Var %>%
-  ggplot(aes(x=PolicyInvolved, y=Deaths.involving.COVID.19)) +
-  geom_point(aes(color=State)) +
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19) ) +
+  geom_point(aes(color = State) ) +
   geom_smooth() +
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
   xlim(0,15) +
   ylim(0,6500) +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") +
   theme_minimal()
 ```
 
-- From this graph, we can see that the counties with 5-8 policies have the highest Covid-19 deaths in average and those counties with 10-15 policies have higher Covid-19 deaths than those with 1-5 policies in average. But if we take individual look at the glyphs, this statement is completely false. This is tally with the large width of confidence bands for 8-14 number of policies mandated. Again, there is no correlation between the number of Covid-19 deaths and the number of policies mandated we can say at this point.
+- From this graph, we can see that the counties with 5-8 policies have the highest Covid-19 deaths on average and those counties with 10-15 policies have higher Covid-19 deaths than those with 1-5 policies on average. But if we take an individual look at the glyphs, this statement is completely false. This is tally with the large width of confidence bands for 8-14 number of policies mandated. Again, there is no correlation between the number of Covid-19 deaths and the number of policies mandated we can say at this point.
 
 ```{r}
 Death_Policy_Var %>%
-  ggplot(aes(x=PolicyInvolved, y=Deaths.involving.COVID.19)) +
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19) ) +
   geom_point() +
-  facet_wrap( ~ State) +
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  facet_wrap(~ State) +
+  labs(x = "Number of Policies Mandated", y="Number of Covid-19 Deaths") +
   xlim(0,15) +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies in a County By States") +
   theme_linedraw()
 ```
 
-- Now, let's look at collective of each state statistics data. From this graph, we can see the trend in each states (that consists the counties). There are some states that have higher Covid-19 deaths as the number of policies mandated increases e.g. Florida (FL), Georgia (GA), and New York (NY). However, there are also states that have lower Covid-19 deaths as the number of policies mandated increases e.g. Utah (UT), Missouri (MA), and Tennessee (TN). Not just that, there also states with constant number of Covid-19 deaths with constant number of policies mandated e.g. Washington (WA), Wisconsin (WI), Michigan (MI), and North Carolina (NC). Thus, there is no conclusion of correlation we can draw at this point. 
+- Now, let's look at the collective of each state statistics data. From this graph, we can see the trend in each state (that consists of the counties). There are some states that have higher Covid-19 deaths as the number of policies mandated increases e.g. Florida (FL), Georgia (GA), and New York (NY). However, there are also states that have lower Covid-19 deaths as the number of policies mandated increases e.g. Utah (UT), Missouri (MA), and Tennessee (TN). Not just that, there also states with constant number of Covid-19 deaths with constant number of policies mandated e.g. Washington (WA), Wisconsin (WI), Michigan (MI), and North Carolina (NC). Thus, there is no conclusion of correlation we can draw at this point. 
 
-*Let's Look Into The Narrow and Wide Data*
+
+# Let's Look Into The Narrow and Wide Data*
 
 ```{r}
 DPV_narrow <- # DPV stands for Death_Policy_Var and 'narrow' since it is the narrow version
@@ -143,7 +145,7 @@ DPV_wide <- # DPV stands for Death_Policy_Var and 'wide' since it is the wide ve
 head(DPV_wide)
 ```
 
-- From the DPV_wide data, I can see that the number of Covid-19 death tolls does not correspond to the number of Covid-19 policies mandated in a county. For example, Alameda County with 454 death cases have 13 policies implemented, while Allegheny County with 528 death cases only has 1 policy. Not just that, Allegany which has 17 death cases has 2 more policies compared to Allegheny County, which its death cases is way more striking than Allegany.
+- From the DPV_wide data, I can see that the number of Covid-19 death tolls does not correspond to the number of Covid-19 policies mandated in a county. For example, Alameda County with 454 death cases has 13 policies implemented, while Allegheny County with 528 death cases only has 1 policy. Not just that, Allegany which has 17 death cases has 2 more policies compared to Allegheny County, which its death cases is way more striking than Allegany.
 
 
 ## Challenge Encountered & Resolutions 
@@ -162,65 +164,65 @@ head(DPV_wide)
 - But I still follow the general rule which states that the sample sizes must be equal to or greater than 30 to assume that the distribution of the sample means is fairly normally distributed.
 - By that, I will set some random conditions in 'regex' during the sample size selection process until it reaches 30 or more.
 
-*Step 1: I need to remove the "County" and "Borough" word first in each column (since I want the county/borough name solely for this entire n selection process)*
+# Step 1: I need to remove the "County" and "Borough" word first in each column (since I want the county/borough name solely for this entire n selection process)*
 
 ```{r}
 # regex condition is any data in column variable County.name that has word "County" or "Borough" and replace them with "" which means basically nothing so it removes them from the data table
 
 Regex_data <-
 Death_Policy_Var %>%
-  mutate(County.name = gsub(pattern = "County|Borough", replacement = "", County.name)) %>%
+  mutate(County.name = gsub(pattern = "County|Borough", replacement = "", County.name) ) %>%
   na.omit()
 
 head(Regex_data)
 ```
          
-*Step 2: Sample Size Selection Process*
+# Step 2: Sample Size Selection Process*
 
 Condition : County which contains -three vowels or more in a row- or contains only -1 consonent- or -character 'ox' or 'pe' or 'ds' or 'zo' or 'rd'-
 
 ```{r}
-SRSSample <-
+NSSRSSample <-
 Regex_data %>%
-  filter(grepl("([aeiou]{3,}|^[aeiou]{1}|ox|pe|ds|zo|rd)", County.name, ignore.case = TRUE))
+  filter(grepl("([aeiou]{3,}|^[aeiou]{1}|ox|pe|ds|zo|rd)", County.name, ignore.case = TRUE) )
 
-head(SRSSample)
+head(NSSRSSample)
 ```
 
-*Analysis From Not So Simple Random Sampling*
+# Analysis From Not So Simple Random Sampling
 
 ```{r}
-SRSSample %>%
-  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+NSSRSSample %>%
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name) ) +
   geom_point(size = 1.3) +
   geom_smooth(se = FALSE, color = "light green") +
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") +
   theme_light()
 ```
 
 ```{r}
-SRSSample %>%
-  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19)) +
+NSSRSSample %>%
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19) ) +
   geom_point() +
   geom_line() +
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
 ```
 
-- From the two graphs if I look into the individual glyph, I can say that roughly the counties with low Covid-19 death cases tend to have higher number of Covid-19 policies and counties with high Covid-19 death case tend to have lower number of Covid-19 policies. 
+- From the two graphs if I look into the individual glyph, I can say that roughly the counties with low Covid-19 death cases tend to have a higher number of Covid-19 policies, and counties with high Covid-19 death cases tend to have a lower number of Covid-19 policies. 
 - However, I cannot make that assumption straight as a conclusion, because there are various other factors I have to consider statistically e.g. the proportion of each county (based on the number of Covid-19 policy implemented) in its respective clusters that I will do later in my analysis part.
 
 
 ## Strategy 2: Divide The Counties Into Clusters
 
-- To tackle to the challenge encountered as stated earlier, I am going to divide the counties into five categories based on the number of Covid-19 deaths: 
+- To tackle the challenge encountered as stated earlier, I am going to divide the counties into five categories based on the number of Covid-19 deaths: 
 - (1) counties with extremely high number of Covid-19 deaths, 3000-6418 deaths.
 - (2) counties with high number of Covid-19 deaths, 900-2999 deaths.
 - (3) counties with medium number of Covid-19 deaths, 300-899 deaths.
 - (4) counties with low number of Covid-19 deaths, 100-299 deaths.
 - (5) counties with extremely low number of Covid-19 deaths, 0-99 deaths.
-- Then from there, I will be observing each trends in the clusters corresponding to the number of Covid-19 policies involved.
+- Then from there, I will be observing each trend in the clusters corresponding to the number of Covid-19 policies involved.
 
 
 ```{r}
@@ -235,9 +237,9 @@ mean(Covid19$Deaths.involving.COVID.19)
 range(Covid19$Deaths.involving.COVID.19)
 ```
 
-- We see that the mean of Covid-19 deaths is 170 (after round up to one decimal place), the median is 39 and the minimum is 10 and the maximum is 6418.
+- We see that the mean of Covid-19 deaths is 170 (after round up to one decimal place), the median is 39, the minimum is 10 and the maximum is 6418.
 
-*cluster 1: counties with extremely high number of Covid-19 deaths*
+# Cluster 1: counties with extremely high number of Covid-19 deaths*
 
 ```{r}
 # 3000-6418 deaths
@@ -245,17 +247,17 @@ range(Covid19$Deaths.involving.COVID.19)
 Cluster1 <-
   Death_Policy_Var %>%
   filter(Deaths.involving.COVID.19 >= 3000 & Deaths.involving.COVID.19 <= 6418) %>%
-  arrange(desc(Deaths.involving.COVID.19)) 
+  arrange(desc(Deaths.involving.COVID.19) ) 
 
 head(Cluster1)
 ```
 
 ```{r}
 Cluster1 %>%
-  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name) ) +
   geom_point(size = 2) +
   geom_smooth(se = FALSE, color = "grey") +
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
 
 ```
@@ -263,10 +265,10 @@ Cluster1 %>%
 ```{r}
 Cluster1 %>%
   group_by(PolicyInvolved) %>%
-  summarise(total=n())
+  summarise(total = n() )
 ```
 
-- We can see from the graph that there are 3 counties (Harris, Maricopa, Los Angeles) with only 1 policy mandated although the deaths tolls from the Covid-19 in those counties are among the highest in the country. Also, the other 5 counties have 6-7 number of Covid-19 policies mandated. 
+- We can see from the graph that there are 3 counties (Harris, Maricopa, Los Angeles) with only 1 policy mandated although the death tolls from the Covid-19 in those counties are among the highest in the country. Also, the other 5 counties have 6-7 number of Covid-19 policies mandated. 
 - In this scenario, we can say that majority of the counties in the extremely high number of Covid-19 deaths is implementing 6-7 Covid-19 policies.
 
 ```{r}
@@ -275,13 +277,14 @@ Cluster1diffs<- dist(Cluster1)
 
 ```{r}
 hc1 <- hclust(Cluster1diffs)
-plot(hc1, hang=-1)
+plot(hc1, hang = -1)
 ```
 
-- From the Cluster Dendrogram above, we can see that there are two clusters within the cluster 1 itself. 
-- Which means, there are some variability 
+- My main purpose of graphing this cluster dendrogram is to give some insights into how similar or different the elements in the first cluster.
+- From the Cluster Dendrogram above, we can see that there are six clades (branch) and eight leaves.
+- The height of the branch points indicates how similar or different they are from each other: the greater the height, the greater the difference.
 
-*cluster 2: counties with high number of Covid-19 deaths*
+# Cluster 2: counties with high number of Covid-19 deaths*
 
 ```{r}
 # 900-2999 deaths
@@ -289,28 +292,28 @@ plot(hc1, hang=-1)
 Cluster2 <-
   Death_Policy_Var %>%
   filter(Deaths.involving.COVID.19 >= 900 & Deaths.involving.COVID.19 <= 2999) %>%
-  arrange(desc(Deaths.involving.COVID.19))
+  arrange(desc(Deaths.involving.COVID.19) )
 
 head(Cluster2)
 ```
 
 ```{r}
 Cluster2 %>%
-  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name) ) +
   geom_point(size = 2) +
   geom_smooth(se = FALSE, color = "yellow") +
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County")
 ```
 
 ```{r}
 Cluster2 %>%
   group_by(PolicyInvolved) %>%
-  summarise(total=n())
+  summarise(total = n() )
 ```
 
-- From the graph we can see there are 8 out of 13 counties that only have 1 policies mandated. Note that there is one glyph that is invisible because the number of Covid-19 deaths between the two counties is very close to each other so they appear to be one glyph while in fact, they are individual glyphs. While the other 5 counties have 5-8 policies. 
-- In this situation, we can say that majority of the counties with high number of Covid-19 deaths is implementing only 1 Covid-19 policy.
+- From the graph, we can see there are 8 out of 13 counties that only have 1 policy mandated. Note that there is one glyph that is invisible because the number of Covid-19 deaths between the two counties is very close to each other so they appear to be one glyph while in fact, they are individual glyphs. While the other 5 counties have 5-8 policies. 
+- In this situation, we can say that majority of the counties with a high number of Covid-19 deaths are implementing only 1 Covid-19 policy.
 
 ```{r}
 Cluster2diffs<- dist(Cluster2)
@@ -318,10 +321,14 @@ Cluster2diffs<- dist(Cluster2)
 
 ```{r}
 hc2 <- hclust(Cluster2diffs)
-plot(hc2, hang=-1)
+plot(hc2, hang = -1)
 ```
 
-*cluster 3: counties with medium number of Covid-19 deaths*
+- My main purpose of graphing this cluster dendrogram is to give some insights into how similar or different the elements in the second cluster.
+- From the Cluster Dendrogram above, we can see that there are 10 clades (branch) and 13 leaves.
+- The height of the branch points indicates how similar or different they are from each other: the greater the height, the greater the difference.
+
+# Cluster 3: counties with medium number of Covid-19 deaths*
 
 ```{r}
 # 300-899 deaths
@@ -329,14 +336,14 @@ plot(hc2, hang=-1)
 Cluster3 <-
   Death_Policy_Var %>%
   filter(Deaths.involving.COVID.19 >= 300 & Deaths.involving.COVID.19 <= 899) %>%
-  arrange(desc(Deaths.involving.COVID.19))
+  arrange(desc(Deaths.involving.COVID.19) )
 
 head(Cluster3)
 ```
 
 ```{r}
 Cluster3 %>%
-  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name) ) +
   geom_point(size = 2) +
   geom_smooth(se = FALSE, color = "orange") +
   labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
@@ -347,11 +354,11 @@ Cluster3 %>%
 ```{r}
 Cluster3 %>%
   group_by(PolicyInvolved) %>%
-  summarise(total=n())
+  summarise(total = n() )
 ```
 
-- From the graph we can see that majority of the counties are implementing only 1-2 policies (with 23 of the counties are having 1 policy). There are only 6 counties that have policies from range 3 to 13. The county that has 13 Covid-19 policies is Alameda County, California. 
-- In this case, we can say that majority of the counties with medium number of Covid-19 deaths is implementing only 1 Covid-19 policy.
+- From the graph, we can see that majority of the counties are implementing only 1-2 policies (with 23 of the counties are having 1 policy). There are only 6 counties that have policies from range 3 to 13. The county that has 13 Covid-19 policies is Alameda County, California. 
+- In this case, we can say that majority of the counties with a medium number of Covid-19 deaths are implementing only 1 Covid-19 policy.
 
 ```{r}
 Cluster3diffs<- dist(Cluster3)
@@ -359,10 +366,14 @@ Cluster3diffs<- dist(Cluster3)
 
 ```{r}
 hc3 <- hclust(Cluster3diffs)
-plot(hc3, hang=-1)
+plot(hc3, hang = -1)
 ```
 
-*cluster 4: counties with low number of Covid-19 deaths*
+- My main purpose of graphing this cluster dendrogram is to give some insights into how similar or different the elements in the third cluster.
+- From the Cluster Dendrogram above, we can see that there are 35 clades (branch) and 38 leaves.
+- The height of the branch points indicates how similar or different they are from each other: the greater the height, the greater the difference.
+
+# Cluster 4: counties with low number of Covid-19 deaths*
 
 ```{r}
 # 100-299 deaths.
@@ -370,29 +381,29 @@ plot(hc3, hang=-1)
 Cluster4 <-
   Death_Policy_Var %>%
   filter(Deaths.involving.COVID.19 >= 100 & Deaths.involving.COVID.19 <= 299) %>%
-  arrange(desc(Deaths.involving.COVID.19))
+  arrange(desc(Deaths.involving.COVID.19) )
 
 head(Cluster4)
 ```
 
 ```{r}
 Cluster4 %>%
-  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name) ) +
   geom_point(size = 2) +
   geom_smooth(se = FALSE, color = "pink") +
   theme(legend.position = "nowhere") + # I choose "nowhere" since the total of counties are 69 which the graph will shrink with the presence of the legend
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") 
 ```
 
 ```{r}
 Cluster4 %>%
   group_by(PolicyInvolved) %>%
-  summarise(total=n())
+  summarise(total = n() )
 ```
 
-- From this graph, we can see that majority of the counties (45 of them) are implementing 1 Covid-19 policy. Also, there are 8 counties that have a range from 6 to 14 Covid-19 policies.
-- In this scenario, we can say that majority of the counties with low number of Covid-19 deaths is implementing only 1 Covid-19 policy. 
+- From this graph, we can see that majority of the counties (45 of them) are implementing 1 Covid-19 policy. Also, there are 8 counties that have a range of 6 to 14 Covid-19 policies.
+- In this scenario, we can say that majority of the counties with a low number of Covid-19 deaths are implementing only 1 Covid-19 policy. 
 
 ```{r}
 Cluster4diffs<- dist(Cluster4)
@@ -400,10 +411,14 @@ Cluster4diffs<- dist(Cluster4)
 
 ```{r}
 hc4 <- hclust(Cluster4diffs)
-plot(hc4, hang=-1)
+plot(hc4, hang = -1)
 ```
 
-*cluster 5: counties with extremely low number of Covid-19 deaths*
+- My main purpose of graphing this cluster dendrogram is to give some insights into how similar or different the elements in the fourth cluster.
+- From the Cluster Dendrogram above, we can see that there are 62 clades (branch) and 67 leaves.
+- The height of the branch points indicates how similar or different they are from each other: the greater the height, the greater the difference.
+
+# Cluster 5: counties with extremely low number of Covid-19 deaths*
 
 ```{r}
 # 0-99 deaths.
@@ -411,18 +426,18 @@ plot(hc4, hang=-1)
 Cluster5 <-
   Death_Policy_Var %>%
   filter(Deaths.involving.COVID.19 >= 0 & Deaths.involving.COVID.19 <= 99) %>%
-  arrange(desc(Deaths.involving.COVID.19))
+  arrange(desc(Deaths.involving.COVID.19) )
 
 head(Cluster5)
 ```
 
 ```{r}
 Cluster5 %>%
-  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name)) +
+  ggplot(aes(x = PolicyInvolved, y = Deaths.involving.COVID.19, color = County.name) ) +
   geom_point(size = 2) +
   geom_smooth(se = FALSE, color = "light blue") +
   theme(legend.position = "nowhere") + # I choose "nowhere" since the total of counties are 163 which the graph will shrink with the presence of the legend
-  labs(x="Number of Policies Mandated", y="Number of Covid-19 Deaths") +
+  labs(x = "Number of Policies Mandated", y = "Number of Covid-19 Deaths") +
   ggtitle("Number of Covid-19 Deaths Versus Number of Policies Mandated in a County") 
 
 ```
@@ -430,13 +445,11 @@ Cluster5 %>%
 ```{r}
 Cluster5 %>%
   group_by(PolicyInvolved) %>%
-  summarise(total=n())
+  summarise(total = n() )
 ```
 
-- From this graph, we can see that, again, majority of the counties is having only 1 Covid-19 policies. The sum of counties with 1 Covid-19 policy is 108, which makes up a proportion of 66.3% from the total population of counties in the extremely low Covid-19 deaths cluster. Also, there are 8 counties in this cluster that have a range of 6 to 10 Covid-19 policies. 
-- In this case, we can say that majority of the counties with low number of Covid-19 deaths is implementing only 1 Covid-19 policy. 
-
-As a conclusion after dividing the counties into 5 categories process, I can conclude that based on this data, regardless of the total Covid-19 deaths tolls in any county, majority of the county is Implementing only 1 Covid-19 policy. 
+- From this graph, we can see that, again, the majority of the counties is having only 1 Covid-19 policy. The sum of counties with 1 Covid-19 policy is 108, which makes up a proportion of 66.3% from the total population of counties in the extremely low Covid-19 deaths cluster. Also, there are 8 counties in this cluster that have a range of 6 to 10 Covid-19 policies. 
+- In this case, we can say that majority of the counties with a low number of Covid-19 deaths are implementing only 1 Covid-19 policy. 
 
 ```{r}
 Cluster5diffs<- dist(Cluster5)
@@ -444,14 +457,20 @@ Cluster5diffs<- dist(Cluster5)
 
 ```{r}
 hc5 <- hclust(Cluster5diffs)
-plot(hc5, hang=-1)
+plot(hc5, hang = -1)
 ```
 
-## Finding from Technique 1: Majority of the County in the United States is Implementing only 1 Covid-19 Policy
+- My main purpose of graphing this cluster dendrogram is to give some insights into how similar or different the elements in the fifth cluster.
+- From the Cluster Dendrogram above, we can see that there are more than 70 clades (branch) and more than 90 leaves.
+- The height of the branch points indicates how similar or different they are from each other: the greater the height, the greater the difference.
 
-- Regardless of the total Covid-19 deaths tolls in any county, majority of the county is Implementing only 1 Covid-19 policy. 
-- The proportion of counties with only 1 Covid-19 policy makes up 64% from the total 292 counties that we have in the data sets (187/292*100= 64%).
-- Now let's find out what is that particular 1 policy that most of the counties is implementing and investigate if the spesific policy is .
+- As a conclusion after dividing the counties into 5 categories process, I can conclude that based on this data, regardless of the total Covid-19 death tolls in any county, the majority of the county is Implementing only 1 Covid-19 policy. 
+
+## Finding from Strategy 2: Majority of the County in the United States is Implementing only 1 Covid-19 Policy
+
+- Regardless of the total Covid-19 death tolls in any county, the majority of the county is Implementing only 1 Covid-19 policy. 
+- The proportion of counties with only 1 Covid-19 policy makes up 64% of the total 292 counties that we have in the data sets (187/292*100= 64%).
+- Now let's find out what is that particular 1 policy that most of the counties are implementing and investigate if the specific policy is effective and reasonable.
 
 ```{r}
 County1Policy <-
@@ -472,17 +491,16 @@ head(PolicyTypeofCounty1Policy)
 ```{r}
 PolicyTypeofCounty1Policy %>%
   group_by(policy_type) %>%
-  summarise(total = n()) %>%
-  arrange(desc(total))
+  summarise(total = n() ) %>%
+  arrange(desc(total) )
 ```
 
-- We find that that most common and famous policy type that is implemented by counties with only 1 Covid-19 policy is Shelter in Place, or also known as quarantine order. 
+- We find that the most common and famous policy type that is implemented by counties with only 1 Covid-19 policy is Shelter in Place, or also known as quarantine order. 
 - It is indeed the most effective method to protect the citizens from being exposed to the virus and the virus itself from spreading like a wildfire.
 
 ## Conclusion From All Findings
 
-From all the analysis process I have done, I can conclude that there is no correlation between the number of Covid-19 deaths and the number of policies implemented in a county. This is because first: each policy addresses different problem at the county level. Second: from most scientific findings, usually people who died from the Covid-19 virus are people at old age and people with exisiting chronic health problems. And last but not least: the authority might look at the number of Covid-19 cases rather looking at the number of death tolls from Covid-19 as the main resource before deciding to implement any new policy.
-
+From all the analysis process I have done, I can conclude that there is no correlation between the number of Covid-19 deaths and the number of policies implemented in a county. This is because first: each policy addresses a different problem at the county level. Second: from most scientific findings, usually people who died from the Covid-19 virus are people at an old age and people with existing chronic health problems. And last but not least: the authority might look at the number of Covid-19 cases rather looking at the number of death tolls from Covid-19 as the main resource before deciding to implement any new policy.
 
 
 
