@@ -127,7 +127,7 @@ Death_Policy_Var %>%
 - Now, let's look at the collective of each state statistics data. From this graph, we can see the trend in each state (that consists of the counties). There are some states that have higher Covid-19 deaths as the number of policies mandated increases e.g. Florida (FL), Georgia (GA), and New York (NY). However, there are also states that have lower Covid-19 deaths as the number of policies mandated increases e.g. Utah (UT), Missouri (MA), and Tennessee (TN). Not just that, there also states with constant number of Covid-19 deaths with constant number of policies mandated e.g. Washington (WA), Wisconsin (WI), Michigan (MI), and North Carolina (NC). Thus, there is no conclusion of correlation we can draw at this point. 
 
 
-# Let's Look Into The Narrow and Wide Data*
+### Let's Look Into The Narrow and Wide Data
 
 ```{r}
 DPV_narrow <- # DPV stands for Death_Policy_Var and 'narrow' since it is the narrow version
@@ -164,7 +164,7 @@ head(DPV_wide)
 - But I still follow the general rule which states that the sample sizes must be equal to or greater than 30 to assume that the distribution of the sample means is fairly normally distributed.
 - By that, I will set some random conditions in 'regex' during the sample size selection process until it reaches 30 or more.
 
-# Step 1: I need to remove the "County" and "Borough" word first in each column (since I want the county/borough name solely for this entire n selection process)*
+### Step 1: I need to remove the "County" and "Borough" word first in each column (since I want the county/borough name solely for this entire n selection process)
 
 ```{r}
 # regex condition is any data in column variable County.name that has word "County" or "Borough" and replace them with "" which means basically nothing so it removes them from the data table
@@ -177,7 +177,7 @@ Death_Policy_Var %>%
 head(Regex_data)
 ```
          
-# Step 2: Sample Size Selection Process*
+### Step 2: Sample Size Selection Process
 
 Condition : County which contains -three vowels or more in a row- or contains only -1 consonent- or -character 'ox' or 'pe' or 'ds' or 'zo' or 'rd'-
 
@@ -189,7 +189,7 @@ Regex_data %>%
 head(NSSRSSample)
 ```
 
-# Analysis From Not So Simple Random Sampling
+### Analysis From Not So Simple Random Sampling
 
 ```{r}
 NSSRSSample %>%
@@ -239,7 +239,7 @@ range(Covid19$Deaths.involving.COVID.19)
 
 - We see that the mean of Covid-19 deaths is 170 (after round up to one decimal place), the median is 39, the minimum is 10 and the maximum is 6418.
 
-# Cluster 1: counties with extremely high number of Covid-19 deaths*
+### Cluster 1: counties with extremely high number of Covid-19 deaths
 
 ```{r}
 # 3000-6418 deaths
@@ -284,7 +284,7 @@ plot(hc1, hang = -1)
 - From the Cluster Dendrogram above, we can see that there are six clades (branch) and eight leaves.
 - The height of the branch points indicates how similar or different they are from each other: the greater the height, the greater the difference.
 
-# Cluster 2: counties with high number of Covid-19 deaths*
+### Cluster 2: counties with high number of Covid-19 deaths
 
 ```{r}
 # 900-2999 deaths
@@ -328,7 +328,7 @@ plot(hc2, hang = -1)
 - From the Cluster Dendrogram above, we can see that there are 10 clades (branch) and 13 leaves.
 - The height of the branch points indicates how similar or different they are from each other: the greater the height, the greater the difference.
 
-# Cluster 3: counties with medium number of Covid-19 deaths*
+### Cluster 3: counties with medium number of Covid-19 deaths
 
 ```{r}
 # 300-899 deaths
@@ -373,7 +373,7 @@ plot(hc3, hang = -1)
 - From the Cluster Dendrogram above, we can see that there are 35 clades (branch) and 38 leaves.
 - The height of the branch points indicates how similar or different they are from each other: the greater the height, the greater the difference.
 
-# Cluster 4: counties with low number of Covid-19 deaths*
+### Cluster 4: counties with low number of Covid-19 deaths
 
 ```{r}
 # 100-299 deaths.
@@ -418,7 +418,7 @@ plot(hc4, hang = -1)
 - From the Cluster Dendrogram above, we can see that there are 62 clades (branch) and 67 leaves.
 - The height of the branch points indicates how similar or different they are from each other: the greater the height, the greater the difference.
 
-# Cluster 5: counties with extremely low number of Covid-19 deaths*
+### Cluster 5: counties with extremely low number of Covid-19 deaths
 
 ```{r}
 # 0-99 deaths.
